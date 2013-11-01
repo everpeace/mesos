@@ -159,6 +159,7 @@ public:
       foreach (const Offer& offer, offers) {
         driver->declineOffer(offer.id());
       }
+      return;
     }
 
     const Offer& offer = offers.front();
