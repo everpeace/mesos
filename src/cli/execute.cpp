@@ -30,6 +30,9 @@
 #include <stout/option.hpp>
 #include <stout/os.hpp>
 
+#include <common/type_utils.hpp>
+#include <common/protobuf_utils.hpp>
+
 #include "hdfs/hdfs.hpp"
 
 using namespace mesos;
@@ -127,16 +130,13 @@ public:
       SchedulerDriver* _driver,
       const FrameworkID& _frameworkId,
       const MasterInfo& _masterInfo) {
-    frameworkId = _frameworkId.value();
-    cout << "The mesos-execute scheduler is registered. (framework id= "
-         << frameworkId << ")" << endl;
+    cout << "Framework registered with " << _frameworkId << endl;
   }
 
   virtual void reregistered(
       SchedulerDriver* _driver,
       const MasterInfo& _masterInfo) {
-    cout << "The mesos-execute scheduler is re-registered. (framework id= "
-         << frameworkId << ")" << endl;
+    cout << "Framework re-registered" << endl;
   }
 
   virtual void disconnected(
@@ -190,53 +190,8 @@ public:
       const TaskStatus& status)
   {
     CHECK_EQ(name, status.task_id().value());
-    switch(status.state()){
-      case TASK_STAGING:
-        cout << "Your task is staging. "
-             << "(framework-id="<< frameworkId
-             << ", task-id=" << status.task_id().value()
-             << ")" << endl;
-        break;
-      case TASK_STARTING:
-        cout << "Your task is starting.  "
-             << "(framework-id="<< frameworkId
-             << ", task-id=" << status.task_id().value()
-             << ")" << endl;
-        break;
-      case TASK_RUNNING:
-        cout << "Your task is running.  "
-             << "(framework-id="<< frameworkId
-             << ", task-id=" << status.task_id().value()
-             << ")" << endl;
-        break;
-      case TASK_FINISHED:
-        cout << "Your task is finished.  "
-             << "(framework-id="<< frameworkId
-             << ", task-id=" << status.task_id().value()
-             << ")" << endl;
-        break;
-      case TASK_FAILED:
-        cerr << "Your task is finished.  "
-             << "(framework-id="<< frameworkId
-             << ", task-id=" << status.task_id().value()
-             << ")" << endl;
-        break;
-      case TASK_KILLED:
-        cerr << "Your task is killed.  "
-             << "(framework-id="<< frameworkId
-             << ", task-id=" << status.task_id().value()
-             << ")" << endl;
-        break;
-      case TASK_LOST:
-        cerr << "Your task is lost.  "
-             << "(framework-id="<< frameworkId
-             << ", task-id=" << status.task_id().value()
-             << ")" << endl;
-        break;
-    }
-
-    if (status.state() == TASK_FINISHED || status.state() == TASK_FAILED
-        || status.state()== TASK_KILLED || status.state() == TASK_LOST) {
+    cout << "Received status update " << status.state() << " for task " << status.task_id() << endl;
+    if (protobuf::isTerminalState(status.state())) {
       driver->stop();
     }
   }
@@ -266,7 +221,6 @@ private:
   const string command;
   const string resources;
   const Option<string> uri;
-  string frameworkId;
 
   bool launched;
 };
