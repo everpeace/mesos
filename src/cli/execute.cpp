@@ -155,8 +155,8 @@ public:
       return;
     }
 
-    foreach (const Offer& offer, offers){
-      if(!launched && TASK_RESOURCES.get() <= offer.resources()){
+    foreach (const Offer& offer, offers) {
+      if( !launched && TASK_RESOURCES.get() <= offer.resources()) {
         TaskInfo task;
         task.set_name(name);
         task.mutable_task_id()->set_value(name);
@@ -173,7 +173,7 @@ public:
              << offer.slave_id() << endl;
 
         launched = true;
-      }else{
+      } else {
         driver->declineOffer(offer.id());
       }
     }
@@ -188,7 +188,8 @@ public:
       const TaskStatus& status)
   {
     CHECK_EQ(name, status.task_id().value());
-    cout << "Received status update " << status.state() << " for task " << status.task_id() << endl;
+    cout << "Received status update " << status.state()
+         << " for task " << status.task_id() << endl;
     if (protobuf::isTerminalState(status.state())) {
       driver->stop();
     }
