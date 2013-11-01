@@ -155,31 +155,28 @@ public:
       return;
     }
 
-    if (launched) {
-      foreach (const Offer& offer, offers) {
+    foreach (const Offer& offer, offers){
+      if(!launched && TASK_RESOURCES.get() <= offer.resources()){
+        TaskInfo task;
+        task.set_name(name);
+        task.mutable_task_id()->set_value(name);
+        task.mutable_slave_id()->MergeFrom(offer.slave_id());
+        task.mutable_resources()->CopyFrom(TASK_RESOURCES.get());
+        task.mutable_command()->set_value(command);
+        if (uri.isSome()) task.mutable_command()->add_uris()->set_value(uri.get());
+
+        vector<TaskInfo> tasks;
+        tasks.push_back(task);
+
+        driver->launchTasks(offer.id(), tasks);
+        cout << "task " << name << " submitted to slave "
+             << offer.slave_id() << endl;
+
+        launched = true;
+      }else{
         driver->declineOffer(offer.id());
       }
-      return;
     }
-
-    const Offer& offer = offers.front();
-
-    // TODO(benh): Make sure offer has enough resources.
-
-    TaskInfo task;
-    task.set_name(name);
-    task.mutable_task_id()->set_value(name);
-    task.mutable_slave_id()->MergeFrom(offer.slave_id());
-    task.mutable_resources()->CopyFrom(TASK_RESOURCES.get());
-    task.mutable_command()->set_value(command);
-    if (uri.isSome()) task.mutable_command()->add_uris()->set_value(uri.get());
-
-    vector<TaskInfo> tasks;
-    tasks.push_back(task);
-
-    driver->launchTasks(offer.id(), tasks);
-
-    launched = true;
   }
 
   virtual void offerRescinded(
