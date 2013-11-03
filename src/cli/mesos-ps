@@ -14,12 +14,12 @@ if sys.version_info < (2,6,0):
   sys.stderr.write("You need python 2.6 or later to run\n")
   sys.exit(1)
 
-USER_COLUMN_WIDTH = 4
-FRAMEWORK_COLUMN_WIDTH = 4
-TASK_COLUMN_WIDTH = 6
-SLAVE_COLUMN_WIDTH = 14
-CPU_COLUMN_WIDTH = 4
-MEM_COLUMN_WIDTH = 8
+USER_COLUMN_WIDTH = 9 
+FRAMEWORK_COLUMN_WIDTH = 10
+TASK_COLUMN_WIDTH = 10
+SLAVE_COLUMN_WIDTH = 18
+CPU_COLUMN_WIDTH = 10
+MEM_COLUMN_WIDTH = 18
 TIME_COLUMN_WIDTH = 14
 
 
@@ -70,37 +70,60 @@ def ulimit(args):
 class Slave:
   def __init__(self, slave):
     self.slave = slave
-    self.process = None
+    self.process_stats = None
     self.statistics = None
+    self.process_usage = None
+    self.usage = None
 
   def hostname(self):
     return self.slave['hostname']
 
   def curl(self):
-    if self.process is None:
+    if self.process_stats is None:
       pid = self.slave['pid']
       url = 'http://' + pid[len('slave(1)@'):] + '/monitor/statistics.json'
-      self.process = subprocess.Popen(
-        ['curl', '-s', url],
+      self.process_stats = subprocess.Popen(
+        ['curl', '-sSfL', url],
+        stdin=None,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False)
+    if self.process_usage is None:
+      pid = self.slave['pid']
+      url = 'http://' + pid[len('slave(1)@'):] + '/monitor/usage.json'
+      self.process_usage = subprocess.Popen(
+        ['curl', '-sSfL', url],
         stdin=None,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=False)
 
   def load(self):
-    if self.process is None:
+    if self.process_stats is None or \
+       self.process_usage is None:
       self.curl()
+
     if self.statistics is None:
-      status = self.process.wait()
+      status = self.process_stats.wait()
       if status != 0:
         print 'Failed to execute \'curl\':\n'
         print self.process.stderr.read()
         sys.exit(1)
-      self.statistics = json.loads(self.process.stdout.read())
-      self.process.stdout.close()
-      self.process.stderr.close()
+      self.statistics = json.loads(self.process_stats.stdout.read())
+      self.process_stats.stdout.close()
+      self.process_stats.stderr.close()
 
-  def cpus_time_secs(self, task):
+    if self.usage is None:
+      status = self.process_usage.wait()
+      if status != 0:
+        print 'Failed to execute \'curl\':\n'
+        print self.process.stderr.read()
+        sys.exit(1)
+      self.usage = json.loads(self.process_usage.stdout.read())
+      self.process_usage.stdout.close()
+      self.process_usage.stderr.close()      
+
+  def stats_for(self, task):
     self.load()
     framework_id = task['framework_id']
     executor_id = task['executor_id']
@@ -109,40 +132,58 @@ class Slave:
       entry = self.statistics[i]
       if entry['framework_id'] == framework_id and \
          entry['executor_id'] == executor_id:
-        return entry['statistics']['cpus_system_time_secs'] + \
-               entry['statistics']['cpus_user_time_secs']
+          return entry['statistics']
+    return None
+
+  def rss_usage_for(self, task):
+    self.load()
+    framework_id = task['framework_id']
+    executor_id = task['executor_id']
+    if executor_id == "": executor_id = task['id']
+    for e in self.usage:
+      if executor_id == e['executor_id'] and \
+         framework_id == e['framework_id']:
+         return e['resource_usage']
+    return None
+
+  def cpus_time_secs(self, task):
+    usage = self.rss_usage_for(task) 
+    if usage is not None:
+      return usage['cpu_time']
     return None
 
   def mem_rss_bytes(self, task):
-    self.load()
-    framework_id = task['framework_id']
-    executor_id = task['executor_id']
-    if executor_id == "": executor_id = task['id']
-    for i in range(len(self.statistics)):
-      entry = self.statistics[i]
-      if entry['framework_id'] == framework_id and \
-         entry['executor_id'] == executor_id:
-        return entry['statistics']['mem_rss_bytes']
+    usage = self.rss_usage_for(task) 
+    if usage is not None:
+        return usage['memory_rss']
     return None
 
-  def cpus(self, task):
-    self.load()
-    framework_id = task['framework_id']
-    executor_id = task['executor_id']
-    if executor_id == "": executor_id = task['id']
-    for i in range(len(self.statistics)):
-      entry = self.statistics[i]
-      if entry['framework_id'] == framework_id and \
-         entry['executor_id'] == executor_id:
-        return entry['statistics']['cpus_limit']
-    return None  
+  def cpu_usage(self, task):
+    usage = self.rss_usage_for(task) 
+    if usage is not None:
+        return usage['cpu_usage']
+    return None
 
+  def mem_limit_bytes(self, task):
+    stats = self.stats_for(task) 
+    if stats is not None:
+      return stats['mem_limit_bytes']
+    return None
+
+  def cpus_limit(self, task):
+    stats = self.stats_for(task) 
+    if stats is not None:
+        return stats['cpus_limit']
+    return None
 
 # Define the columns.
 class Column:
-  def __init__(self, title, padding):
+  def __init__(self, title, width):
     self.title = title
-    self.padding = padding
+    if len(self.title) < width:
+      self.padding = width - len(self.title)
+    else:
+      self.padding = 0
 
   def width(self):
     return len(self.title) + self.padding
@@ -223,25 +264,38 @@ def main():
       # Get memory usage and cpus *time* from the slave (we can't get
       # cpus % unless we have a previous value).
       mem_rss_bytes = slaves[task['slave_id']].mem_rss_bytes(task)
+      mem_limit_bytes = slaves[task['slave_id']].mem_limit_bytes(task)
       cpus_time_secs = slaves[task['slave_id']].cpus_time_secs(task)
-      cpus = slaves[task['slave_id']].cpus(task)
+      cpus_limit = slaves[task['slave_id']].cpus_limit(task)
+      cpu_usage = slaves[task['slave_id']].cpu_usage(task)
 
-      if cpus is not None:
-        sys.stdout.write(columns[4].format(cpus))
+      if cpu_usage is not None:
+        if cpus_limit is not None:
+          s = "{usage:.1f}/{limit:.1f}".format(usage=cpu_usage, 
+                                               limit=cpus_limit)
+        else:
+          s = "{usage:.1f}".format(usage=cpu_usage) 
+        sys.stdout.write(columns[4].format(s))
       else:
         sys.stdout.write(columns[4].format(None))
 
       if mem_rss_bytes is not None:
         MB = 1024.0 * 1024.0
         mem_rss_megabytes = mem_rss_bytes / MB
-        s = "{0:.1f} MB".format(mem_rss_megabytes)
+        if mem_limit_bytes is not None:
+          mem_limit_megabytes = mem_limit_bytes / MB
+          s = "{usage:.1f}/{limit:.1f} MB".format(usage=mem_rss_megabytes,
+                                                  limit=mem_limit_megabytes)
+        else:
+          s = "{0:.1f} MB".format(mem_rss_megabytes)
         sys.stdout.write(columns[5].format(s))
       else:
         sys.stdout.write(columns[5].format(None))
 
       if cpus_time_secs is not None:
         dt = datetime.datetime.utcfromtimestamp(cpus_time_secs)
-        sys.stdout.write(columns[6].format(dt.strftime('%H:%M:%S.%f')))
+        dt_str = dt.strftime('%H:%M:%S.') + dt.strftime('%f')[:3]
+        sys.stdout.write(columns[6].format(dt_str))
       else:
         sys.stdout.write(columns[6].format(None))
 
