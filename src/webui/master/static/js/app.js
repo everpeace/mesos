@@ -191,8 +191,7 @@
           label: "@",
           labelColor: "@",
           barValue: "@",
-          barColor: "@",
-          onClick: "&"
+          barColor: "@"
         },
         link: function(scope, iElement, iAttrs) {
           var svg = d3.select(iElement[0])
@@ -285,35 +284,16 @@
                 })
                 .attr("y", function(d){
                   return yScale(bar_y_padding);
-                })
-                // TODO(everpeace) support to tooltip
-                .on("click", function(d, i){
-                    return alert(""+d[scope.label]+":"+d[scope.barValue]);
-                    // return scope.onClick({
-                    //   data:d,
-                    //   barValue:scope.barValue,
-                    //   barColor:scope.barColor,
-                    //   label:scope.label,
-                    //   labelColor:scope.labelColor
-                    // });
-                })
+                });
 
-            // svg.selectAll("text")
-            //   .data(_converted)
-            //   .enter()
-            //     .append("text")
-            //     .attr("fill", function(d){
-            //       return d[scope.labelColor];
-            //     })
-            //     .attr("x", function(d){
-            //       return xScale(d.x0)+5;
-            //     })
-            //     .attr("y", function(d){
-            //       return yScale(bar_y_padding + bar_height * 0.8);
-            //     })
-            //     .text(function(d){
-            //       return d[scope.label];
-            //     });
+                $('svg rect').tipsy({ 
+          		  gravity: 's', 
+		          html: true, 
+                  title: function() {
+                    var d = this.__data__;
+                    return d[scope.label]+":"+d[scope.barValue]; 
+                  }
+                });
           };
         }
       };

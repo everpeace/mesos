@@ -255,7 +255,7 @@
       {type: "Killed"  , number:$scope.killed_tasks  , barColor:"#0f0", labelColor:"#000"},
       {type: "Failed"  , number:$scope.failed_tasks  , barColor:"#f00", labelColor:"#000"},
       {type: "Lost"    , number:$scope.lost_tasks    , barColor:"#0f0", labelColor:"#000"} 
-    ]
+    ];
     $scope.d3DataResource = [
       {type: "Used"    , cpus:$scope.used_cpus   , mem:$scope.used_mem   , barColor:"#f00", labelColor:"#000"},
       {type: "Offered" , cpus:$scope.offered_cpus, mem:$scope.offered_mem, barColor:"#0f0", labelColor:"#000"},
