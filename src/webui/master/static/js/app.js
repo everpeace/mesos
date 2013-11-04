@@ -182,14 +182,13 @@
 	// e.g.
 	// <d3-bar data="<key for data in scope>"
 	//   barValue="<key for bar>", barColor="<key for bar color>"
-	//   label="<key for data label>", labelColor="<key for label color>"></d3-bar>
+	//   label="<key for data label>", ></d3-bar>
     .directive('d3Bar', ['d3', function(d3) {
       return {
         restrict: 'EA',
         scope: {
           data: "=",
           label: "@",
-          labelColor: "@",
           barValue: "@",
           barColor: "@"
         },
@@ -241,7 +240,6 @@
             _.reduce(data,function(memo, d){
               var _d = {};
               _d[scope.label] = d[scope.label];
-              _d[scope.labelColor] = d[scope.labelColor];
               _d[scope.barValue] = d[scope.barValue];
               _d[scope.barColor] = d[scope.barColor];
               _d.x0 = memo;
