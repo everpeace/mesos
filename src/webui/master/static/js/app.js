@@ -177,12 +177,18 @@
         }
       };
     }])
-	// Define d3-bar directive.
-	// This directive renders accumulated bar chart.
-	// e.g.
-	// <d3-bar data="<key for data in scope>"
-	//   barValue="<key for bar>", barColor="<key for bar color>"
-	//   label="<key for data label>", ></d3-bar>
+    // Define d3-bar directive.
+    // This directive renders accumulated bar chart.
+    // Assume we have data below.
+    // $scope.data =
+    //   [ { type:"Activated", num:5, className:"d3bar-activated" },
+    //     { type:"Deactivated, num:3, className:"d3bar-deactivated" }]
+    // $scope.d3TickFormat = function(total, tick){ ..return tick string.. }
+    // $scope.d3TooltipTitle = function(total, d, attr){..return tooltip string ..}
+    // Then, you can place markup below in html.
+    // <d3-bar data="data" barValue="num" label="type", class-label="className"
+    //   tick-format="d3TickFormat(total, tick)"
+    //   tooltip-title="d3TooltipTitle(total, d, attr)" />
     .directive('d3Bar', ['d3', function(d3) {
       return {
         restrict: 'EA',
@@ -190,9 +196,9 @@
           data: "=",
           label: "@",
           barValue: "@",
-          barColor: "@",
-		  tickFormat: "&",
-		  tooltipTitle: "&"          
+          classLabel: "@",
+          tickFormat: "&",
+          tooltipTitle: "&"
         },
         link: function(scope, iElement, iAttrs) {
           var svg = d3.select(iElement[0])
@@ -219,6 +225,9 @@
           scope.render = function(data){
             // remove all previous items before render
             svg.selectAll("*").remove();
+            var sum = _.reduce(data, function(memo, d){
+              return memo + d[scope.barValue];
+            }, 0);
 
             // setup variables
             var elm_width = d3.select(iElement[0])[0][0].offsetWidth
@@ -229,30 +238,31 @@
             width = elm_width - (margin.left + margin.right);
             height = margin.top + bar_y_padding + bar_height;
 
-            // set the height based on the calculations above
-            var sum = _.reduce(data, function(memo, d){ return memo + d[scope.barValue]; }, 0); 
-            if(sum > 0){
+            if(sum > 0 || isNaN(sum)){
               svg.attr('height', height);
             } else {
               svg.attr('height', 0);
             }
 
-            // converting data for stacked bar graph(calcuating x0)
+            // converting data for accumulated bar charts.
+            // calcuating each x0 position.
             var _converted = [];
             _.reduce(data,function(memo, d){
               var _d = {};
               _d[scope.label] = d[scope.label];
               _d[scope.barValue] = d[scope.barValue];
-              _d[scope.barColor] = d[scope.barColor];
+              _d[scope.classLabel] = d[scope.classLabel];
               _d.x0 = memo;
               _converted.push(_d);
               return memo + d[scope.barValue];
             },0)
 
             var xScale = d3.scale.linear()
-                          .domain([0,sum]).range([margin.left, margin.left+width]);
+                          .domain([0,sum])
+                          .range([margin.left, margin.left+width]);
             var yScale = d3.scale.linear()
-                          .domain([0,height]).range([margin.top, height + margin.top]);
+                          .domain([0,height])
+                          .range([margin.top, height + margin.top]);
             var numTicks = sum <= 1 ? 1
                            :sum < 10 ? 2
                            : 10;
@@ -260,11 +270,9 @@
                           .scale(xScale)
                           .ticks(numTicks)
                           .orient("top")
-            			  .tickFormat(function(tick){ 
-            				return scope.tickFormat({total:sum, tick:tick});
-		             	  });
-
-            // TODO(everpeace) support Axis formatter
+                          .tickFormat(function(tick){
+                            return scope.tickFormat({total:sum, tick:tick});
+                          });
             svg.append('g')
               .attr({
                 class: "axis",
@@ -272,12 +280,14 @@
               })
               .call(xAxis);
 
-            //create the rectangles for the bar chart
+            // create the rectangles for the bar chart
             svg.selectAll("rect")
               .data(_converted)
               .enter()
                 .append("rect")
-                .attr("fill", function(d){ return d[scope.barColor]; })
+                .attr("class", function(d){
+                  return d[scope.classLabel]; }
+                )
                 .attr("height", bar_height) // height of each bar
                 .attr("width", function(d){
                     return xScale(d[scope.barValue]) - margin.left;
@@ -288,21 +298,21 @@
                 .attr("y", function(d){
                   return yScale(bar_y_padding);
                 });
-
-            $('svg rect').tipsy({ 
-      		  gravity: 's', 
-	          html: true, 
+            // set tooltips
+            $('svg rect').tipsy({
+            gravity: 's',
+            html: true,
               title: function() {
                 var d = this.__data__;
                 return scope.tooltipTitle({
-                	total: sum,
-                	d: d,
-                	attr: {
-                	  label: scope.label,
-          			  barValue: scope.barValue,
-          			  barColor: scope.barColor	
-                	}
-                }); 
+                  total: sum,
+                  d: d,
+                  attr: {
+                    label: scope.label,
+                    barValue: scope.barValue,
+                    classLabel: scope.classLabel
+                  }
+                });
               }
             });
           };

@@ -1,12 +1,26 @@
-.axis path, .axis line {
-	fill : none;
-    stroke: black;
-}
-.axis text {
-	font-size: 8px;
-}
+/* d3-bar axis */
+.axis path, .axis line { fill : none; stroke: black; }
+.axis text { font-size: 8px; }
 
-/* https://gist.github.com/ilyabo/1373263#file-tipsy-css */
+/* d3bar's color settings */
+/* TODO(everpeace): refine color scheme; */
+.d3bar-activated {  fill: #006FBC; }
+.d3bar-deactivated { fill: #E43451; }
+.d3bar-staged { fill: #006FBC; }
+.d3bar-started { fill: #006FDC; }
+.d3bar-finished { fill: #006F00; }
+.d3bar-killed { fill: #E48451; }
+.d3bar-failed { fill: #E45451; }
+.d3bar-lost { fill: #E43451; }
+.d3bar-used { fill: #E43451; }
+.d3bar-offered { fill: #5896B8; }
+.d3bar-idle { fill: #B7B7B7; }
+
+/* tipsy, facebook style tooltips for jquery */
+/* version 1.0.0a                            */
+/* (c) 2008-2010 jason frame [jason@onehackoranother.com] */
+/* released under the MIT license            */
+/* https://gist.github.com/ilyabo/1373263)   */
 .tipsy { font-size: 10px; position: absolute; padding: 5px; z-index: 100000; }
 .tipsy-inner { background-color: #000; color: #FFF; max-width: 200px; padding: 5px 8px 4px 8px; text-align: center; }
 
@@ -14,7 +28,7 @@
 .tipsy-inner { border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px; }
 
 /* Uncomment for shadow */
-/*.tipsy-inner { box-shadow: 0 0 5px #000000; -webkit-box-shadow: 0 0 5px #000000; -moz-box-shadow: 0 0 5px #000000; }*/
+.tipsy-inner { box-shadow: 0 0 5px #000000; -webkit-box-shadow: 0 0 5px #000000; -moz-box-shadow: 0 0 5px #000000; }
 
 .tipsy-arrow { position: absolute; width: 0; height: 0; line-height: 0; border: 5px dashed #000; }
 

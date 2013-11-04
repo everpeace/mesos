@@ -245,21 +245,21 @@
     $scope.time_since_update = 0;
 
     $scope.d3DataSlaves = [
-      {type: "Activated", number:$scope.activated_slaves, barColor:"#006FBC", labelColor:"#000"},
-      {type: "Deactivated", number:$scope.deactivated_slaves, barColor:"#E43451", labelColor:"#000"},
+      {type: "Activated", number:$scope.activated_slaves, className:"d3bar-activated"       },
+      {type: "Deactivated", number:$scope.deactivated_slaves, className:"d3bar-deactivated" }
     ];
     $scope.d3DataTasks = [
-      {type: "Staged"  , number:$scope.staged_tasks  , barColor:"#006FBC", labelColor:"#000"},
-      {type: "Started" , number:$scope.started_tasks , barColor:"#006fdc", labelColor:"#000"},
-      {type: "Finished", number:$scope.finished_tasks, barColor:"#006f00", labelColor:"#000"},
-      {type: "Killed"  , number:$scope.killed_tasks  , barColor:"#e48451", labelColor:"#000"},
-      {type: "Failed"  , number:$scope.failed_tasks  , barColor:"#E45451", labelColor:"#000"},
-      {type: "Lost"    , number:$scope.lost_tasks    , barColor:"#E43451", labelColor:"#000"} 
+      {type: "Staged"  , number:$scope.staged_tasks  , className:"d3bar-staged"  },
+      {type: "Started" , number:$scope.started_tasks , className:"d3bar-started" },
+      {type: "Finished", number:$scope.finished_tasks, className:"d3bar-finished"},
+      {type: "Killed"  , number:$scope.killed_tasks  , className:"d3bar-killed"  },
+      {type: "Failed"  , number:$scope.failed_tasks  , className:"d3bar-failed"  },
+      {type: "Lost"    , number:$scope.lost_tasks    , className:"d3bar-lost"    }
     ];
     $scope.d3DataResource = [
-      {type: "Used"    , cpus:$scope.used_cpus   , mem:$scope.used_mem   , barColor:"#E43451", labelColor:"#000"},
-      {type: "Offered" , cpus:$scope.offered_cpus, mem:$scope.offered_mem, barColor:"#5896B8", labelColor:"#000"},
-      {type: "Idle"    , cpus:$scope.idle_cpus   , mem:$scope.idle_mem  , barColor:"#B7B7B7", labelColor:"#000"},
+      {type: "Used"    , cpus:$scope.used_cpus   , mem:$scope.used_mem   , className:"d3bar-used"    },
+      {type: "Offered" , cpus:$scope.offered_cpus, mem:$scope.offered_mem, className:"d3bar-offered" },
+      {type: "Idle"    , cpus:$scope.idle_cpus   , mem:$scope.idle_mem   , className:"d3bar-idle"    }
     ];
 
     $.event.trigger('state_updated');
@@ -381,14 +381,14 @@
       }
     };
 
-    $scope.d3TickFormat = function(total, tick){ 
-      return tick; 
+    $scope.d3TickFormat = function(total, tick){
+      return tick;
     };
 
     $scope.d3TooltipTitle = function(total, d, attr){
-      return d[attr.label]+":"+d[attr.barValue];
+      return d[attr.label] + ":" + d[attr.barValue];
     };
-    
+
     var dataSize = function(total, value, unitize){
       var ret = '';
       var unit = dataUnit(total);
@@ -400,9 +400,9 @@
         ret += (value / (1024 * 1024)).toFixed();
       } else { // unit == 'GB'
         ret += (value / (1024 * 1024 * 1024)).toFixed();
-      };  
+      };
       if(unitize){
-        ret += ' '+unit  
+        ret += ' '+unit
       }
       return ret;
     };
@@ -416,16 +416,17 @@
         return 'MB';
       } else {
         return 'GB';
-      };    
+      };
     };
 
     $scope.d3MemTickFormat = function(total, tick){
-      return dataSize(total*(1024 * 1024), tick*(1024 * 1024), false);
+      return dataSize(total * (1024 * 1024), tick * (1024 * 1024), false);
     };
 
     $scope.d3MemTooltipTitle = function(total, d, attr){
-      return d[attr.label]+":"
-             +dataSize(d[attr.barValue]*(1024 * 1024), d[attr.barValue]*(1024 * 1024), true);
+      return d[attr.label] + ":"
+             + dataSize(d[attr.barValue] * (1024 * 1024),
+                        d[attr.barValue] * (1024 * 1024), true);
     };
   });
 
