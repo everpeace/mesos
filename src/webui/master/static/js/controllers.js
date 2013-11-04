@@ -243,6 +243,25 @@
     $scope.idle_mem = $scope.total_mem - ($scope.offered_mem + $scope.used_mem);
 
     $scope.time_since_update = 0;
+
+    $scope.d3DataSlaves = [
+      {type: "Activated", number:$scope.activated_slaves, barColor:"#f00", labelColor:"#000"},
+      {type: "Deactivated", number:$scope.deactivated_slaves, barColor:"#0f0", labelColor:"#000"},
+    ];
+    $scope.d3DataTasks = [
+      {type: "Staged"  , number:$scope.staged_tasks  , barColor:"#f00", labelColor:"#000"},
+      {type: "Started" , number:$scope.started_tasks , barColor:"#0f0", labelColor:"#000"},
+      {type: "Finished", number:$scope.finished_tasks, barColor:"#f00", labelColor:"#000"},
+      {type: "Killed"  , number:$scope.killed_tasks  , barColor:"#0f0", labelColor:"#000"},
+      {type: "Failed"  , number:$scope.failed_tasks  , barColor:"#f00", labelColor:"#000"},
+      {type: "Lost"    , number:$scope.lost_tasks    , barColor:"#0f0", labelColor:"#000"} 
+    ]
+    $scope.d3DataResource = [
+      {type: "Used"    , cpus:$scope.used_cpus   , mem:$scope.used_mem   , barColor:"#f00", labelColor:"#000"},
+      {type: "Offered" , cpus:$scope.offered_cpus, mem:$scope.offered_mem, barColor:"#0f0", labelColor:"#000"},
+      {type: "Idle"    , cpus:$scope.idle_cpus   , mem:$scope.idle_mem  , barColor:"#00f", labelColor:"#000"},
+    ];
+
     $.event.trigger('state_updated');
 
     return true; // Continue polling.
