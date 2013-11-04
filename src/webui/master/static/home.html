@@ -51,7 +51,7 @@
       <p><a href="" ng-click="log($event)">LOG</a></p>
 
       <h4>Slaves</h4>
-      <d3-bar data="d3DataSlaves" label="type" bar-value="number" bar-color="barColor"></d3-bar>
+      <d3-bar data="d3DataSlaves" label="type" bar-value="number" bar-color="barColor" tick-format="d3TickFormat(total, tick)" tooltip-title="d3TooltipTitle(total, d, attr)"></d3-bar>
       <table class="table table-condensed">
         <tbody>
           <tr>
@@ -66,7 +66,7 @@
       </table>
 
       <h4>Tasks</h4>
-      <d3-bar data="d3DataTasks" label="type" bar-value="number" bar-color="barColor"></d3-bar>
+      <d3-bar data="d3DataTasks" label="type" bar-value="number" bar-color="barColor" tick-format="d3TickFormat(total, tick)" tooltip-title="d3TooltipTitle(total, d, attr)"></d3-bar>
       <table class="table table-condensed">
         <tbody>
           <tr>
@@ -97,8 +97,8 @@
       </table>
 
       <h4>Resources</h4>
-      <d3-bar data="d3DataResource" label="type" bar-value="cpus" bar-color="barColor"></d3-bar>
-      <d3-bar data="d3DataResource" label="type" bar-value="mem" bar-color="barColor"></d3-bar>
+      <d3-bar data="d3DataResource" label="type" bar-value="cpus" bar-color="barColor" tick-format="d3TickFormat(total, tick)" tooltip-title="d3TooltipTitle(total, d, attr)"></d3-bar>
+      <d3-bar data="d3DataResource" label="type" bar-value="mem" bar-color="barColor" tick-format="d3MemTickFormat(total, tick)" tooltip-title="d3MemTooltipTitle(total, d, attr)"></d3-bar>
       <table class="table table-condensed">
         <thead>
           <tr>

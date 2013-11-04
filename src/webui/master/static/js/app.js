@@ -190,7 +190,9 @@
           data: "=",
           label: "@",
           barValue: "@",
-          barColor: "@"
+          barColor: "@",
+		  tickFormat: "&",
+		  tooltipTitle: "&"          
         },
         link: function(scope, iElement, iAttrs) {
           var svg = d3.select(iElement[0])
@@ -257,7 +259,10 @@
             var xAxis = d3.svg.axis()
                           .scale(xScale)
                           .ticks(numTicks)
-                          .orient("top");
+                          .orient("top")
+            			  .tickFormat(function(tick){ 
+            				return scope.tickFormat({total:sum, tick:tick});
+		             	  });
 
             // TODO(everpeace) support Axis formatter
             svg.append('g')
@@ -284,14 +289,22 @@
                   return yScale(bar_y_padding);
                 });
 
-                $('svg rect').tipsy({ 
-          		  gravity: 's', 
-		          html: true, 
-                  title: function() {
-                    var d = this.__data__;
-                    return d[scope.label]+":"+d[scope.barValue]; 
-                  }
-                });
+            $('svg rect').tipsy({ 
+      		  gravity: 's', 
+	          html: true, 
+              title: function() {
+                var d = this.__data__;
+                return scope.tooltipTitle({
+                	total: sum,
+                	d: d,
+                	attr: {
+                	  label: scope.label,
+          			  barValue: scope.barValue,
+          			  barColor: scope.barColor	
+                	}
+                }); 
+              }
+            });
           };
         }
       };

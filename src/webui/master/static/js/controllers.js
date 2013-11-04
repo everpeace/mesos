@@ -380,6 +380,53 @@
             'Mesos Master');
       }
     };
+
+    $scope.d3TickFormat = function(total, tick){ 
+      return tick; 
+    };
+
+    $scope.d3TooltipTitle = function(total, d, attr){
+      return d[attr.label]+":"+d[attr.barValue];
+    };
+    
+    var dataSize = function(total, value, unitize){
+      var ret = '';
+      var unit = dataUnit(total);
+      if (unit == 'B') {
+        ret += value;
+      } else if (unit == 'KB'){
+        ret += (value/ 1024).toFixed();
+      } else if (unit == 'MB'){
+        ret += (value / (1024 * 1024)).toFixed();
+      } else { // unit == 'GB'
+        ret += (value / (1024 * 1024 * 1024)).toFixed();
+      };  
+      if(unitize){
+        ret += ' '+unit  
+      }
+      return ret;
+    };
+
+    var dataUnit = function(value){
+      if (value < 1024) {
+        return 'B';
+      } else if (value < (1024 * 1024)) {
+        return 'KB';
+      } else if (value < (1024 * 1024 * 1024)) {
+        return 'MB';
+      } else {
+        return 'GB';
+      };    
+    };
+
+    $scope.d3MemTickFormat = function(total, tick){
+      return dataSize(total*(1024 * 1024), tick*(1024 * 1024), false);
+    };
+
+    $scope.d3MemTooltipTitle = function(total, d, attr){
+      return d[attr.label]+":"
+             +dataSize(d[attr.barValue]*(1024 * 1024), d[attr.barValue]*(1024 * 1024), true);
+    };
   });
 
 
