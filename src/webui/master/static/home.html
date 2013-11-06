@@ -51,6 +51,16 @@
       <p><a href="" ng-click="log($event)">LOG</a></p>
 
       <h4>Slaves</h4>
+      <div class="progress">
+        <div class="bar"
+          style="width: {{activated_slaves / total_slaves *100 | number}}%;"
+          tooltip="Activated: {{activated_slaves}}">
+        </div>
+        <div class="bar bar-warning"
+          style="width: {{deactivated_slaves / total_slaves *100 | number}}%;"
+          tooltip="Deactivated: {{deactivated_slaves}}">
+        </div>
+      </div>
       <table class="table table-condensed">
         <tbody>
           <tr>
@@ -65,8 +75,33 @@
       </table>
 
       <h4>Tasks</h4>
+      <div class="progress">
+        <div class="bar bar-success"
+          style="width: {{staged_tasks/total_tasks*100 | number}}%;"
+          tooltip="Staged: {{staged_tasks}}">
+        </div>
+        <div class="bar"
+          style="width: {{started_tasks/total_tasks*100 | number}}%;"
+          tooltip="Started: {{started_tasks}}">
+        </div>
+        <div class="bar bar-warning"
+          style="width: {{finished_tasks/total_tasks*100 | number}}%;"
+          tooltip="Finished: {{finished_tasks}}">
+        </div>
+        <div class="bar bar-warning"
+          style="width: {{killed_tasks/total_tasks*100 | number}}%;"
+          tooltip="Killed: {{killed_tasks}}">
+        </div>
+        <div class="bar bar-danger"
+          style="width: {{failed_tasks/total_tasks*100 | number}}%;"
+          tooltip="Failed: {{failed_tasks}}">
+        </div>
+        <div class="bar bar-danger"
+          style="width: {{lost_tasks/total_tasks*100 | number}}%;"
+          tooltip="Lost: {{lost_tasks}}">
+        </div>
+      </div>
       <table class="table table-condensed">
-
         <tbody>
           <tr>
             <td>Staged</td>
@@ -96,6 +131,26 @@
       </table>
 
       <h4>Resources</h4>
+      <div class="progress">
+        <div class="bar"
+          style="width: {{used_cpus/total_cpus*100 | number}}%;"
+          tooltip="CPU Used: {{used_cpus}}">
+        </div>
+        <div class="bar bar-warning"
+          style="width: {{idle_cpus/total_cpus*100 | number}}%;"
+          tooltip="CPU Idle: {{idle_cpus}}">
+        </div>
+      </div>
+      <div class="progress">
+        <div class="bar"
+          style="width: {{used_mem / total_mem*100 | number }}%;"
+          tooltip="Mem Used: {{used_mem * (1024 * 1024)| dataSize}}">
+        </div>
+        <div class="bar bar-warning"
+          style="width: {{idle_mem / total_mem * 100 | number}}%;"
+          tooltip="Mem Idle: {{idle_mem * (1024 * 1023) | dataSize}}">
+        </div>
+      </div>
       <table class="table table-condensed">
         <thead>
           <tr>

@@ -175,9 +175,13 @@
     $scope.killed_tasks = $scope.state.killed_tasks;
     $scope.failed_tasks = $scope.state.failed_tasks;
     $scope.lost_tasks = $scope.state.lost_tasks;
+    $scope.total_tasks = $scope.staged_tasks + $scope.started_tasks
+      + $scope.finished_tasks + $scope.killed_tasks + $scope.failed_tasks
+      + $scope.lost_tasks;
 
     $scope.activated_slaves = $scope.state.activated_slaves;
     $scope.deactivated_slaves = $scope.state.deactivated_slaves;
+    $scope.total_slaves = $scope.activated_slaves + $scope.deactivated_slaves;
 
     _.each($scope.state.slaves, function(slave) {
       $scope.slaves[slave.id] = slave;
@@ -238,7 +242,8 @@
 
     $scope.idle_cpus = $scope.total_cpus - ($scope.offered_cpus + $scope.used_cpus);
     $scope.idle_mem = $scope.total_mem - ($scope.offered_mem + $scope.used_mem);
-
+    $scope.total_cpus = $scope.used_cpus + $scope.idle_cpus;
+    $scope.total_mem = $scope.used_mem + $scope.idle_mem;
     $scope.time_since_update = 0;
     $.event.trigger('state_updated');
 
