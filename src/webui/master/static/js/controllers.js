@@ -244,6 +244,7 @@
     $scope.idle_mem = $scope.total_mem - ($scope.offered_mem + $scope.used_mem);
     $scope.total_cpus = $scope.used_cpus + $scope.idle_cpus;
     $scope.total_mem = $scope.used_mem + $scope.idle_mem;
+
     $scope.time_since_update = 0;
     $.event.trigger('state_updated');
 
