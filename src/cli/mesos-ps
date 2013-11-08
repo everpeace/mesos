@@ -19,14 +19,13 @@ if sys.version_info < (2,6,0):
     sys.exit(1)
 
 
-USER_COLUMN_WIDTH = 9
-FRAMEWORK_COLUMN_WIDTH = 10
-TASK_COLUMN_WIDTH = 10
-SLAVE_COLUMN_WIDTH = 18
-CPU_COLUMN_WIDTH = 2
-MEM_COLUMN_WIDTH = 18
+USER_COLUMN_WIDTH = 4
+FRAMEWORK_COLUMN_WIDTH = 4
+TASK_COLUMN_WIDTH = 6
+SLAVE_COLUMN_WIDTH = 14
+MEM_COLUMN_WIDTH = 16
 TIME_COLUMN_WIDTH = 14
-
+CPU_COLUMN_WIDTH = 0
 
 # Defines the column structure for printing to the terminal.
 class Column:
@@ -101,10 +100,33 @@ def mem(task, statistics):
 
     if mem_rss_bytes is not None:
         MB = 1024.0 * 1024.0
-        return '{usage:.1f}/{limit:.1f} MB'.format(usage = mem_rss_bytes / MB,
-                                                   limit = mem_limit_bytes / MB)
+        return '{usage:.1f} {usage_unit}/{limit:.1f} {limit_unit}' \
+                .format(usage = dataSize(mem_rss_bytes),
+                        usage_unit = dataUnit(mem_rss_bytes),
+                        limit = dataSize(mem_limit_bytes),
+                        limit_unit = dataUnit(mem_limit_bytes))
 
     return None
+
+def dataUnit(bytes):
+    if bytes < 1024:
+        return 'B'
+    elif bytes < (1024 * 1024):
+        return 'KB'
+    elif bytes < (1024 * 1024 * 1024):
+        return 'MB'
+    else:
+        return 'GB'
+
+def dataSize(bytes):
+    if bytes < 1024:
+        return bytes
+    elif bytes < (1024 * 1024):
+        return bytes / 1024
+    elif bytes < (1024 * 1024 * 1024):
+        return bytes / (1024 * 1024)
+    else:
+        return bytes / (1024 * 1024 * 1024)
 
 
 # Helper for formatting the TIME column for a task.
@@ -174,9 +196,9 @@ def main():
     columns[1] = Column('FRAMEWORK', FRAMEWORK_COLUMN_WIDTH)
     columns[2] = Column('TASK', TASK_COLUMN_WIDTH)
     columns[3] = Column('SLAVE', SLAVE_COLUMN_WIDTH)
-    columns[4] = Column('CPU(limit)', CPU_COLUMN_WIDTH)
-    columns[5] = Column('MEM', MEM_COLUMN_WIDTH)
-    columns[6] = Column('TIME', TIME_COLUMN_WIDTH)
+    columns[4] = Column('MEM', MEM_COLUMN_WIDTH)
+    columns[5] = Column('TIME', TIME_COLUMN_WIDTH)
+    columns[6] = Column('CPU(allocated)', CPU_COLUMN_WIDTH)
 
     # Output the header.
     for i in columns:
@@ -211,9 +233,9 @@ def main():
                     sys.stdout.write(columns[1].truncate(framework['name']))
                     sys.stdout.write(columns[2].truncate(task['name']))
                     sys.stdout.write(columns[3].truncate(slave['hostname']))
-                    sys.stdout.write(columns[4].truncate(cpus(task, statistics)))
-                    sys.stdout.write(columns[5].truncate(mem(task, statistics)))
-                    sys.stdout.write(columns[6].truncate(time(task, statistics)))
+                    sys.stdout.write(columns[4].truncate(mem(task, statistics)))
+                    sys.stdout.write(columns[5].truncate(time(task, statistics)))
+                    sys.stdout.write(columns[6].truncate(cpus(task, statistics)))
 
     sys.stdout.write('\n')
     sys.exit(0)
