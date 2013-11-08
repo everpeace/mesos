@@ -57,7 +57,7 @@ int main(int argc, char** argv)
   // the path).
   Try<string> dirname = os::dirname(argv[0]);
   if (dirname.isSome()) {
-    Try<string> realpath = os::realpath(dirname.get());
+    Result<string> realpath = os::realpath(dirname.get());
     if (realpath.isSome()) {
       os::setenv("PATH", realpath.get() + ":" + os::getenv("PATH"));
     }
@@ -67,6 +67,12 @@ int main(int argc, char** argv)
     usage(argv[0]);
     exit(1);
   }
+
+  // Update PYTHONPATH to include path to installed 'mesos' module.
+  // TODO(benh): Remove this if/when we install the 'mesos' module via
+  // PIP and setuptools.
+  string path = path::join(PKGLIBEXECDIR, "python");
+  os::setenv("PYTHONPATH", os::getenv("PYTHONPATH", false) + ":" + path);
 
   // Now dispatch to any mesos-'command' on PATH.
   if (string(argv[1]) == "help") {

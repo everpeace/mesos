@@ -234,6 +234,13 @@ void Slave::initialize()
   info.mutable_attributes()->MergeFrom(attributes);
   info.set_checkpoint(flags.checkpoint);
 
+  // The required 'webui_hostname' field has been deprecated and
+  // changed to optional for now, but we still need to set it for
+  // interoperating with code that expects it to be required (e.g., an
+  // executor on an older release).
+  // TODO(benh): Remove this after the deprecation cycle.
+  info.set_webui_hostname(hostname);
+
   // Spawn and initialize the isolator.
   // TODO(benh): Seems like the isolator should really be
   // spawned before being passed to the slave.
@@ -1991,14 +1998,18 @@ ExecutorInfo Slave::getExecutorInfo(
     // echo the error and exit).
     executor.mutable_command()->MergeFrom(task.command());
 
-    Try<string> path = os::realpath(
+    Result<string> path = os::realpath(
         path::join(flags.launcher_dir, "mesos-executor"));
 
     if (path.isSome()) {
       executor.mutable_command()->set_value(path.get());
     } else {
       executor.mutable_command()->set_value(
-          "echo '" + path.error() + "'; exit 1");
+          "echo '" +
+          (path.isError()
+           ? path.error()
+           : "No such file or directory") +
+          "'; exit 1");
     }
 
     // TODO(benh): Set some resources for the executor so that a task
