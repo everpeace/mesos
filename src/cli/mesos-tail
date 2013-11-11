@@ -63,17 +63,17 @@ def read_forever(slave, task, file):
                 {'path': path,
                  'offset': offset,
                  'length': PAGE_LENGTH})
-            if len(result['data']) == 0:
-                time.sleep(0.5)
-                continue
-            offset += len(result['data'])
-            yield result['data']
         except HTTPError as error:
             if error.code == 404:
                 sys.stderr.write('No such file or directory\n')
             else:
                 sys.stderr.write('Failed to read file from slave\n')
             sys.exit(1)
+        if len(result['data']) == 0:
+            time.sleep(0.5)
+            continue
+        offset += len(result['data'])
+        yield result['data']
 
 
 def main():
@@ -86,16 +86,16 @@ def main():
     (options, args) = parser.parse_args(sys.argv)
 
     if options.master is None:
-        usage('Missing --master\n', parser)
+        usage('Missing --master', parser)
 
     if options.framework is None:
-        usage('Missing --framework\n', parser)
+        usage('Missing --framework', parser)
 
     if options.task is None:
-        usage('Missing --task\n', parser)
+        usage('Missing --task', parser)
 
     if options.file is None:
-        usage('Missing --file\n', parser)
+        usage('Missing --file', parser)
 
     # Get the master's state.
     try:
